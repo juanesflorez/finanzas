@@ -1759,7 +1759,15 @@ $('#file-input').addEventListener('change',async e=>{
   const t=await f.text();await idb.del('csv');
   if(loadText(t,f.name))toast(`${f.name} cargado`);
 });
-for(const d of $$('dialog'))d.addEventListener('click',e=>{if(e.target===d)d.close()});
+/* Cerrar tocando fuera: solo si el toque empezó y terminó realmente fuera de la ventana.
+   El formulario de movimiento nunca se cierra así (en el celular el teclado mueve la pantalla
+   y un toque en otro campo se confundía con un toque fuera, borrando lo escrito). */
+for(const d of $$('dialog')){
+  let downOut=false;
+  const outside=e=>{const r=d.getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom};
+  d.addEventListener('pointerdown',e=>{downOut=e.target===d&&outside(e)});
+  d.addEventListener('click',e=>{if(d.id!=='dlg-mov'&&downOut&&e.target===d&&outside(e))d.close();downOut=false});
+}
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.chart')){hideTip();$$('.chart').forEach(c=>c._reset&&c._reset())}},true);
 addEventListener('scroll',hideTip,{passive:true});
 let rzT=null,lastW=0;
